@@ -5,141 +5,133 @@ namespace EvaluacionTecnicaTheFactoryHKA.Infrastructure.Persistence;
 
 public class ApplicationDbContext : DbContext
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-    {
-    }
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
-    public DbSet<Cliente> Clientes { get; set; } = null!;
-    public DbSet<Categoria> Categorias { get; set; } = null!;
-    public DbSet<Producto> Productos { get; set; } = null!;
-    public DbSet<Factura> Facturas { get; set; } = null!;
-    public DbSet<DetalleFactura> DetalleFacturas { get; set; } = null!;
+    public DbSet<Client> Clients { get; set; } = null!;
+    public DbSet<Category> Categories { get; set; } = null!;
+    public DbSet<Product> Products { get; set; } = null!;
+    public DbSet<Invoice> Invoices { get; set; } = null!;
+    public DbSet<InvoiceDetail> InvoiceDetails { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Cliente>(entity =>
+        modelBuilder.Entity<Client>(entity =>
         {
-            entity.ToTable("Clientes");
+            entity.ToTable("Clients");
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.TipoDocumento).IsRequired().HasMaxLength(10);
-            entity.Property(e => e.NumeroDocumento).IsRequired().HasMaxLength(20);
-            entity.HasIndex(e => e.NumeroDocumento).IsUnique();
-            entity.Property(e => e.Nombres).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.Apellidos).HasMaxLength(100);
+            entity.Property(e => e.DocumentType).IsRequired().HasMaxLength(10);
+            entity.Property(e => e.DocumentNumber).IsRequired().HasMaxLength(20);
+            entity.HasIndex(e => e.DocumentNumber).IsUnique();
+            entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.LastName).HasMaxLength(100);
             entity.Property(e => e.Email).HasMaxLength(150);
-            entity.Property(e => e.Telefono).HasMaxLength(20);
-            entity.Property(e => e.Direccion).HasMaxLength(200);
-            entity.Property(e => e.FechaRegistro).HasDefaultValueSql("GETDATE()");
-            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Phone).HasMaxLength(20);
+            entity.Property(e => e.Address).HasMaxLength(200);
+            entity.Property(e => e.RegistrationDate).HasDefaultValueSql("GETDATE()");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
             
-            entity.ToTable(t => t.HasCheckConstraint("CK_Clientes_Email", "Email IS NULL OR Email LIKE '%_@_%._%'"));
+            entity.ToTable(t => t.HasCheckConstraint("CK_Clients_Email", "Email IS NULL OR Email LIKE '%_@_%._%'"));
         });
 
-        modelBuilder.Entity<Categoria>(entity =>
+        modelBuilder.Entity<Category>(entity =>
         {
-            entity.ToTable("Categorias");
+            entity.ToTable("Categories");
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Nombre).IsRequired().HasMaxLength(80);
-            entity.HasIndex(e => e.Nombre).IsUnique();
-            entity.Property(e => e.Descripcion).HasMaxLength(255);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(80);
+            entity.HasIndex(e => e.Name).IsUnique();
+            entity.Property(e => e.Description).HasMaxLength(255);
         });
 
-        modelBuilder.Entity<Producto>(entity =>
+        modelBuilder.Entity<Product>(entity =>
         {
-            entity.ToTable("Productos");
+            entity.ToTable("Products");
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Codigo).IsRequired().HasMaxLength(30);
-            entity.HasIndex(e => e.Codigo).IsUnique();
-            entity.Property(e => e.Nombre).IsRequired().HasMaxLength(150);
-            entity.Property(e => e.Descripcion).HasMaxLength(500);
-            entity.Property(e => e.PrecioUnitario).HasColumnType("decimal(12,2)");
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(30);
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(150);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.UnitPrice).HasColumnType("decimal(12,2)");
             entity.Property(e => e.Stock).HasDefaultValue(0);
-            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
 
-            entity.HasOne(e => e.Categoria)
-                  .WithMany(c => c.Productos)
-                  .HasForeignKey(e => e.CategoriaId)
+            entity.HasOne(e => e.Category)
+                  .WithMany(c => c.Products)
+                  .HasForeignKey(e => e.CategoryId)
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.ToTable(t => 
             {
-                t.HasCheckConstraint("CK_Productos_Precio", "PrecioUnitario >= 0");
-                t.HasCheckConstraint("CK_Productos_Stock", "Stock >= 0");
+                t.HasCheckConstraint("CK_Products_Price", "UnitPrice >= 0");
+                t.HasCheckConstraint("CK_Products_Stock", "Stock >= 0");
             });
-            
-            entity.HasIndex(e => e.CategoriaId).HasDatabaseName("IX_Productos_Categoria");
         });
 
-        modelBuilder.Entity<Factura>(entity =>
+        modelBuilder.Entity<Invoice>(entity =>
         {
-            entity.ToTable("Facturas");
+            entity.ToTable("Invoices");
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.NumeroFactura).IsRequired().HasMaxLength(20);
-            entity.HasIndex(e => e.NumeroFactura).IsUnique();
-            entity.Property(e => e.FechaEmision).HasDefaultValueSql("GETDATE()");
+            entity.Property(e => e.InvoiceNumber).IsRequired().HasMaxLength(20);
+            entity.HasIndex(e => e.InvoiceNumber).IsUnique();
+            entity.Property(e => e.IssueDate).HasDefaultValueSql("GETDATE()");
             entity.Property(e => e.Subtotal).HasColumnType("decimal(12,2)").HasDefaultValue(0);
-            entity.Property(e => e.Impuesto).HasColumnType("decimal(12,2)").HasDefaultValue(0);
-            entity.Property(e => e.Descuento).HasColumnType("decimal(12,2)").HasDefaultValue(0);
+            entity.Property(e => e.Tax).HasColumnType("decimal(12,2)").HasDefaultValue(0);
+            entity.Property(e => e.Discount).HasColumnType("decimal(12,2)").HasDefaultValue(0);
             entity.Property(e => e.Total).HasColumnType("decimal(12,2)").HasDefaultValue(0);
-            entity.Property(e => e.Estado).IsRequired().HasMaxLength(20).HasDefaultValue("Pendiente");
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(20).HasDefaultValue("Pending");
 
-            entity.HasOne(e => e.Cliente)
-                  .WithMany(c => c.Facturas)
-                  .HasForeignKey(e => e.ClienteId)
+            entity.HasOne(e => e.Client)
+                  .WithMany(c => c.Invoices)
+                  .HasForeignKey(e => e.ClientId)
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.ToTable(t => 
             {
-                t.HasCheckConstraint("CK_Facturas_Estado", "Estado IN ('Pendiente','Pagada','Anulada')");
-                t.HasCheckConstraint("CK_Facturas_Total", "Total >= 0");
+                t.HasCheckConstraint("CK_Invoices_Status", "Status IN ('Pending','Paid','Voided')");
+                t.HasCheckConstraint("CK_Invoices_Total", "Total >= 0");
             });
-            
-            entity.HasIndex(e => e.ClienteId).HasDatabaseName("IX_Facturas_Cliente");
-            entity.HasIndex(e => e.FechaEmision).HasDatabaseName("IX_Facturas_Fecha");
         });
 
-        modelBuilder.Entity<DetalleFactura>(entity =>
+        modelBuilder.Entity<InvoiceDetail>(entity =>
         {
-            entity.ToTable("DetalleFactura");
+            entity.ToTable("InvoiceDetails");
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.PrecioUnitario).HasColumnType("decimal(12,2)");
+            entity.Property(e => e.UnitPrice).HasColumnType("decimal(12,2)");
             entity.Property(e => e.Subtotal)
                   .HasColumnType("decimal(12,2)")
-                  .HasComputedColumnSql("Cantidad * PrecioUnitario", stored: true);
+                  .HasComputedColumnSql("Quantity * UnitPrice", stored: true);
 
-            entity.HasOne(e => e.Factura)
-                  .WithMany(f => f.Detalles)
-                  .HasForeignKey(e => e.FacturaId)
+            entity.HasOne(e => e.Invoice)
+                  .WithMany(f => f.Details)
+                  .HasForeignKey(e => e.InvoiceId)
                   .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(e => e.Producto)
-                  .WithMany(p => p.DetallesFactura)
-                  .HasForeignKey(e => e.ProductoId)
+            entity.HasOne(e => e.Product)
+                  .WithMany(p => p.InvoiceDetails)
+                  .HasForeignKey(e => e.ProductId)
                   .OnDelete(DeleteBehavior.Restrict);
 
-            entity.ToTable(t => t.HasCheckConstraint("CK_Detalle_Cantidad", "Cantidad > 0"));
+            entity.ToTable(t => t.HasCheckConstraint("CK_InvoiceDetails_Quantity", "Quantity > 0"));
             
-            entity.HasIndex(e => new { e.FacturaId, e.ProductoId }).IsUnique().HasDatabaseName("UQ_Detalle_FacturaProducto");
-            entity.HasIndex(e => e.FacturaId).HasDatabaseName("IX_Detalle_Factura");
-            entity.HasIndex(e => e.ProductoId).HasDatabaseName("IX_Detalle_Producto");
+            entity.HasIndex(e => new { e.InvoiceId, e.ProductId }).IsUnique().HasDatabaseName("UQ_InvoiceDetails_InvoiceProduct");
         });
 
         // Seed data
-        modelBuilder.Entity<Categoria>().HasData(
-            new Categoria { Id = 1, Nombre = "Electrónica", Descripcion = "Dispositivos y accesorios electrónicos" },
-            new Categoria { Id = 2, Nombre = "Oficina", Descripcion = "Insumos y equipos de oficina" }
+        modelBuilder.Entity<Category>().HasData(
+            new Category { Id = 1, Name = "Electronics", Description = "Electronic devices and accessories" },
+            new Category { Id = 2, Name = "Office", Description = "Office supplies and equipment" }
         );
 
-        modelBuilder.Entity<Producto>().HasData(
-            new Producto { Id = 1, Codigo = "ELE-001", Nombre = "Mouse inalámbrico", CategoriaId = 1, PrecioUnitario = 45000, Stock = 50, Activo = true },
-            new Producto { Id = 2, Codigo = "ELE-002", Nombre = "Teclado mecánico", CategoriaId = 1, PrecioUnitario = 120000, Stock = 30, Activo = true },
-            new Producto { Id = 3, Codigo = "OFI-001", Nombre = "Resma de papel carta", CategoriaId = 2, PrecioUnitario = 15000, Stock = 100, Activo = true }
+        modelBuilder.Entity<Product>().HasData(
+            new Product { Id = 1, Code = "ELE-001", Name = "Wireless Mouse", CategoryId = 1, UnitPrice = 45000, Stock = 50, IsActive = true },
+            new Product { Id = 2, Code = "ELE-002", Name = "Mechanical Keyboard", CategoryId = 1, UnitPrice = 120000, Stock = 30, IsActive = true },
+            new Product { Id = 3, Code = "OFI-001", Name = "Letter Paper Ream", CategoryId = 2, UnitPrice = 15000, Stock = 100, IsActive = true }
         );
 
-        modelBuilder.Entity<Cliente>().HasData(
-            new Cliente { Id = 1, TipoDocumento = "CC", NumeroDocumento = "1000000001", Nombres = "Juan", Apellidos = "Pérez", Email = "juan.perez@correo.com", Activo = true }
+        modelBuilder.Entity<Client>().HasData(
+            new Client { Id = 1, DocumentType = "CC", DocumentNumber = "1000000001", FirstName = "John", LastName = "Doe", Email = "john.doe@example.com", IsActive = true }
         );
     }
 }
+
