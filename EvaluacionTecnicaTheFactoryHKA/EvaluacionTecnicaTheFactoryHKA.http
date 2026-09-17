@@ -1,0 +1,6 @@
+@EvaluacionTecnicaTheFactoryHKA_HostAddress = http://localhost:5093
+
+GET {{EvaluacionTecnicaTheFactoryHKA_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

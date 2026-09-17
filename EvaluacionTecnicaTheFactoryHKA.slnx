@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/Api/">
+    <Project Path="EvaluacionTecnicaTheFactoryHKA/EvaluacionTecnicaTheFactoryHKA.csproj" />
+  </Folder>
+  <Folder Name="/Core/">
+    <Project Path="EvaluacionTecnicaTheFactoryHKA.Aplication/EvaluacionTecnicaTheFactoryHKA.Application.csproj" />
+    <Project Path="EvaluacionTecnicaTheFactoryHKA.Domain/EvaluacionTecnicaTheFactoryHKA.Domain.csproj" />
+  </Folder>
+  <Folder Name="/Infrastructure/">
+    <Project Path="EvaluacionTecnicaTheFactoryHKA.Authentication/EvaluacionTecnicaTheFactoryHKA.Authentication.csproj" />
+    <Project Path="EvaluacionTecnicaTheFactoryHKA.Infrastructure/EvaluacionTecnicaTheFactoryHKA.Infrastructure.csproj" />
+  </Folder>
+</Solution>
