@@ -1,4 +1,5 @@
 using System.Reflection;
+using EvaluacionTecnicaTheFactoryHKA.Aplication;
 using EvaluacionTecnicaTheFactoryHKA.Authentication;
 using EvaluacionTecnicaTheFactoryHKA.Infrastructure;
 using EvaluacionTecnicaTheFactoryHKA.Middlewares;
@@ -7,6 +8,7 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddAuthServices(builder.Configuration);
 

@@ -103,9 +103,82 @@ public class InvoiceService : IInvoiceService
         };
     }
 
-    public Task<object> GetAllAsync(int? clientId, string? status, DateTime? startDate, DateTime? endDate) => throw new NotImplementedException();
-    public Task<object> GetByIdAsync(int id) => throw new NotImplementedException();
-    public Task VoidAsync(int id) => throw new NotImplementedException();
-    public Task PayAsync(int id) => throw new NotImplementedException();
+    public async Task<object> GetAllAsync(int? clientId, string? status, DateTime? startDate, DateTime? endDate)
+    {
+        var invoices = await _invoiceRepository.GetAllAsync(clientId, status, startDate, endDate);
+        return invoices.Select(i => new
+        {
+            i.Id,
+            i.InvoiceNumber,
+            i.IssueDate,
+            ClientName = $"{i.Client.FirstName} {i.Client.LastName}".Trim(),
+            i.Subtotal,
+            i.Tax,
+            i.Discount,
+            i.Total,
+            i.Status
+        });
+    }
+
+    public async Task<object> GetByIdAsync(int id)
+    {
+        var invoice = await _invoiceRepository.GetByIdAsync(id);
+        if (invoice == null) throw new NotFoundException(nameof(Invoice), id);
+
+        return new
+        {
+            invoice.Id,
+            invoice.InvoiceNumber,
+            invoice.IssueDate,
+            Client = new { invoice.Client.Id, Name = $"{invoice.Client.FirstName} {invoice.Client.LastName}".Trim() },
+            invoice.Subtotal,
+            invoice.Tax,
+            invoice.Discount,
+            invoice.Total,
+            invoice.Status,
+            Details = invoice.Details.Select(d => new
+            {
+                d.Id,
+                d.ProductId,
+                ProductName = d.Product.Name,
+                d.Quantity,
+                d.UnitPrice,
+                d.Subtotal
+            })
+        };
+    }
+
+    public async Task VoidAsync(int id)
+    {
+        var invoice = await _invoiceRepository.GetByIdAsync(id);
+        if (invoice == null) throw new NotFoundException(nameof(Invoice), id);
+        
+        if (invoice.Status == "Voided") throw new DomainException("Invoice is already voided.");
+
+        // Replenish stock
+        foreach (var detail in invoice.Details)
+        {
+            detail.Product.Stock += detail.Quantity;
+            _productRepository.Update(detail.Product);
+        }
+
+        invoice.Status = "Voided";
+        _invoiceRepository.Update(invoice);
+        
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task PayAsync(int id)
+    {
+        var invoice = await _invoiceRepository.GetByIdAsync(id);
+        if (invoice == null) throw new NotFoundException(nameof(Invoice), id);
+
+        if (invoice.Status != "Pending") throw new DomainException($"Cannot pay an invoice with status '{invoice.Status}'.");
+
+        invoice.Status = "Paid";
+        _invoiceRepository.Update(invoice);
+        
+        await _unitOfWork.SaveChangesAsync();
+    }
 }
 
