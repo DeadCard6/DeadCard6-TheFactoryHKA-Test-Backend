@@ -2,5 +2,7 @@ namespace EvaluacionTecnicaTheFactoryHKA.Aplication.Interfaces;
 
 public interface IAuthService
 {
-    string GenerateToken(string username);
+    Task<string> LoginAsync(string username, string password);
+    Task RegisterAsync(string username, string password);
 }
+

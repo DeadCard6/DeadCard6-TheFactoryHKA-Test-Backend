@@ -14,28 +14,30 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
-    public class LoginRequest
+    public class AuthRequest
     {
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
     }
 
     /// <summary>
-    /// Genera un token JWT (Login simluado para prueba técnica).
+    /// Registers a new user.
     /// </summary>
-    /// <remarks>
-    /// Usuario: admin | Contraseña: password123
-    /// </remarks>
-    [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginRequest request)
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] AuthRequest request)
     {
-        // Dummy check para efectos de la prueba
-        if (request.Username == "admin" && request.Password == "password123")
-        {
-            var token = _authService.GenerateToken(request.Username);
-            return Ok(new { Token = token });
-        }
+        await _authService.RegisterAsync(request.Username, request.Password);
+        return Ok(new { Message = "User registered successfully." });
+    }
 
-        return Unauthorized(new { error = "Credenciales incorrectas. Use admin / password123" });
+    /// <summary>
+    /// Authenticates a user and returns a JWT token.
+    /// </summary>
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] AuthRequest request)
+    {
+        var token = await _authService.LoginAsync(request.Username, request.Password);
+        return Ok(new { Token = token });
     }
 }
+

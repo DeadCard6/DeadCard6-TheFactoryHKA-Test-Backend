@@ -12,6 +12,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Product> Products { get; set; } = null!;
     public DbSet<Invoice> Invoices { get; set; } = null!;
     public DbSet<InvoiceDetail> InvoiceDetails { get; set; } = null!;
+    public DbSet<User> Users { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -115,6 +116,15 @@ public class ApplicationDbContext : DbContext
             entity.ToTable(t => t.HasCheckConstraint("CK_InvoiceDetails_Quantity", "Quantity > 0"));
             
             entity.HasIndex(e => new { e.InvoiceId, e.ProductId }).IsUnique().HasDatabaseName("UQ_InvoiceDetails_InvoiceProduct");
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.ToTable("Users");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Username).IsUnique();
+            entity.Property(e => e.Username).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.PasswordHash).IsRequired();
         });
 
         // Seed data
