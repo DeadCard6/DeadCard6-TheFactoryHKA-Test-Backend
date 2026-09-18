@@ -11,3 +11,4 @@ public class ProductResponse
     public int Stock { get; set; }
     public bool IsActive { get; set; }
 }
+

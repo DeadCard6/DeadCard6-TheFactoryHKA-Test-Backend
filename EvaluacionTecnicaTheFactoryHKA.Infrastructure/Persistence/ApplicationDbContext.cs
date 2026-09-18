@@ -148,7 +148,19 @@ public class ApplicationDbContext : DbContext
         );
 
         modelBuilder.Entity<Client>().HasData(
-            new Client { Id = 1, DocumentType = "CC", DocumentNumber = "1000000001", FirstName = "Juan", LastName = "Pérez", Email = "juan.perez@example.com", IsActive = true }
+            new Client
+            {
+                Id = 1,
+                DocumentType = "CC",
+                DocumentNumber = "1000000001",
+                FirstName = "Juan",
+                LastName = "Pérez",
+                Email = "juan.perez@example.com",
+                Phone = "+57 300 123 4567",
+                Address = "Calle 50 #25-30, Bogotá",
+                RegistrationDate = new DateTime(2025, 1, 15, 0, 0, 0, DateTimeKind.Utc),
+                IsActive = true
+            }
         );
     }
 }

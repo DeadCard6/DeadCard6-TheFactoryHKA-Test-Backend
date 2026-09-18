@@ -24,3 +24,4 @@ public class InvoiceDetailResponse
     public decimal UnitPrice { get; set; }
     public decimal Subtotal { get; set; }
 }
+
