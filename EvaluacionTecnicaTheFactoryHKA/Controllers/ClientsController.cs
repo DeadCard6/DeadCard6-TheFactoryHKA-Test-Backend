@@ -65,5 +65,15 @@ public class ClientsController : ControllerBase
         await _clientService.DeleteAsync(id);
         return NoContent();
     }
+
+    /// <summary>
+    /// Reactivates a soft-deleted client.
+    /// </summary>
+    [HttpPatch("{id}/reactivate")]
+    public async Task<IActionResult> Reactivate(int id)
+    {
+        await _clientService.ReactivateAsync(id);
+        return NoContent();
+    }
 }
 

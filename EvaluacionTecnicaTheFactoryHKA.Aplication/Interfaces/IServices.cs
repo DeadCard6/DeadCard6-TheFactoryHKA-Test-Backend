@@ -16,6 +16,7 @@ public interface IClientService
     Task<int> CreateAsync(CreateClientRequest request);
     Task UpdateAsync(int id, CreateClientRequest request);
     Task DeleteAsync(int id);
+    Task ReactivateAsync(int id);
 }
 
 public interface ICategoryService

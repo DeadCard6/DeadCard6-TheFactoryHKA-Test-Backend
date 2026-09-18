@@ -48,6 +48,16 @@ public class ClientService : IClientService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task ReactivateAsync(int id)
+    {
+        var client = await _clientRepository.GetByIdAsync(id);
+        if (client == null) throw new NotFoundException(nameof(Client), id);
+        
+        client.IsActive = true;
+        _clientRepository.Update(client);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
     public async Task<IEnumerable<ClientResponse>> GetAllAsync(bool? isActive)
     {
         var clients = await _clientRepository.GetAllAsync(isActive);
