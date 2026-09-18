@@ -51,6 +51,16 @@ public class ProductService : IProductService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task ReactivateAsync(int id)
+    {
+        var product = await _productRepository.GetByIdAsync(id);
+        if (product == null) throw new NotFoundException(nameof(Product), id);
+
+        product.IsActive = true;
+        _productRepository.Update(product);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
     public async Task<IEnumerable<ProductResponse>> GetAllAsync(int? categoryId, bool? isActive, string? name)
     {
         var products = await _productRepository.GetAllAsync(categoryId, isActive, name);

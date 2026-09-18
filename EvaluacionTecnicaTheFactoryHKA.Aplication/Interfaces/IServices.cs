@@ -33,6 +33,7 @@ public interface IProductService
     Task<int> CreateAsync(CreateProductRequest request);
     Task UpdateAsync(int id, CreateProductRequest request);
     Task DeleteAsync(int id);
+    Task ReactivateAsync(int id);
 }
 
 public interface IInvoiceService

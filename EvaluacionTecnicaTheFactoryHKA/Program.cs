@@ -77,9 +77,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-app.UseHttpsRedirection();
-
 app.UseCors("AllowReactApp");
+
+app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();

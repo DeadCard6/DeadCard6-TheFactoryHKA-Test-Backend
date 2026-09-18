@@ -65,5 +65,15 @@ public class ProductsController : ControllerBase
         await _productService.DeleteAsync(id);
         return NoContent();
     }
+
+    /// <summary>
+    /// Reactivates a soft-deleted product.
+    /// </summary>
+    [HttpPatch("{id}/reactivate")]
+    public async Task<IActionResult> Reactivate(int id)
+    {
+        await _productService.ReactivateAsync(id);
+        return NoContent();
+    }
 }
 

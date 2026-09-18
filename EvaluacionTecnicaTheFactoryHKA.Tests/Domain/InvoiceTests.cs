@@ -69,3 +69,4 @@ public class InvoiceTests
         invoice.Status.Should().Be("Paid");
     }
 }
+

@@ -3,7 +3,7 @@
 This repository contains the backend implementation for the technical evaluation of **The Factory HKA**. 
 The application provides a RESTful API to manage sales (Invoices), Clients, Products, and Categories, including JWT-based authentication.
 
-## 🏗️ Architecture & Design Patterns
+## Architecture & Design Patterns
 
 The solution is built using **Onion Architecture** and principles of **Domain-Driven Design (DDD)**:
 
@@ -20,7 +20,7 @@ The solution is built using **Onion Architecture** and principles of **Domain-Dr
 - `EvaluacionTecnicaTheFactoryHKA`: The ASP.NET Core Web API presentation layer.
 - `EvaluacionTecnicaTheFactoryHKA.Tests`: xUnit project containing Domain and Application unit tests.
 
-## 🚀 Technologies Used
+## Technologies Used
 
 - **.NET 8**
 - **Entity Framework Core**
@@ -29,7 +29,7 @@ The solution is built using **Onion Architecture** and principles of **Domain-Dr
 - **xUnit, Moq, FluentAssertions** (for Unit Testing)
 - **Swagger / OpenAPI** (for API documentation)
 
-## 🛠️ Getting Started
+## Getting Started
 
 ### Prerequisites
 - [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
@@ -59,7 +59,7 @@ The solution is built using **Onion Architecture** and principles of **Domain-Dr
    ```
    The API will start. You can explore and test the endpoints via Swagger UI at `https://localhost:<port>/swagger`.
 
-## 🧪 Running Tests
+## Running Tests
 
 The solution includes a test project validating the Domain logic and Application services.
 
@@ -68,7 +68,8 @@ To run all unit tests:
 dotnet test
 ```
 
-## 🔐 Authentication (JWT)
+## Authentication (JWT)
 
 Most endpoints are secured via JWT (`[Authorize]`). 
 To test the API, you must first create a user or login via the `/api/Auth/login` endpoint to obtain a Token, and then pass it in the `Authorization` header as a Bearer token.
+

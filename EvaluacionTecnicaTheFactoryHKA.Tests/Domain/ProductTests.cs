@@ -85,3 +85,4 @@ public class ProductTests
         act.Should().Throw<DomainException>();
     }
 }
+
