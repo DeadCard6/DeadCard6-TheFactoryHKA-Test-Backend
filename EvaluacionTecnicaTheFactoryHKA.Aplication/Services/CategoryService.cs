@@ -1,4 +1,5 @@
 using EvaluacionTecnicaTheFactoryHKA.Aplication.DTOs.Requests.Categories;
+using EvaluacionTecnicaTheFactoryHKA.Aplication.DTOs.Responses.Categories;
 using EvaluacionTecnicaTheFactoryHKA.Aplication.Interfaces;
 using EvaluacionTecnicaTheFactoryHKA.Domain.Entities;
 using EvaluacionTecnicaTheFactoryHKA.Domain.Exceptions;
@@ -30,14 +31,14 @@ public class CategoryService : ICategoryService
         return category.Id;
     }
 
-    public async Task<object> GetAllAsync()
+    public async Task<IEnumerable<CategoryResponse>> GetAllAsync()
     {
         var categories = await _categoryRepository.GetAllAsync();
-        return categories.Select(c => new
+        return categories.Select(c => new CategoryResponse
         {
-            c.Id,
-            c.Name,
-            c.Description
+            Id = c.Id,
+            Name = c.Name,
+            Description = c.Description
         });
     }
 

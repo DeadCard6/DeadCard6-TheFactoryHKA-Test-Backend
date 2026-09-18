@@ -9,142 +9,95 @@ namespace EvaluacionTecnicaTheFactoryHKA.Aplication.Services;
 
 public class InvoiceService : IInvoiceService
 {
+    private readonly IInvoiceRepository _invoiceRepository;
     private readonly IClientRepository _clientRepository;
     private readonly IProductRepository _productRepository;
-    private readonly IInvoiceRepository _invoiceRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public InvoiceService(
+        IInvoiceRepository invoiceRepository,
         IClientRepository clientRepository,
         IProductRepository productRepository,
-        IInvoiceRepository invoiceRepository,
         IUnitOfWork unitOfWork)
     {
+        _invoiceRepository = invoiceRepository;
         _clientRepository = clientRepository;
         _productRepository = productRepository;
-        _invoiceRepository = invoiceRepository;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<InvoiceResponse> CreateInvoiceAsync(CreateInvoiceRequest request)
+    public async Task<int> CreateInvoiceAsync(CreateInvoiceRequest request)
     {
         var client = await _clientRepository.GetByIdAsync(request.ClientId);
-        if (client == null)
-            throw new NotFoundException(nameof(Client), request.ClientId);
-        
-        if (!client.IsActive)
-            throw new ClientInactiveException(client.Id);
+        if (client == null) throw new NotFoundException(nameof(Client), request.ClientId);
+        if (!client.IsActive) throw new DomainException($"Client '{client.FirstName}' is not active.");
 
-        if (request.Details == null || !request.Details.Any())
-            throw new DomainException("Invoice must contain at least one product.");
+        var invoice = new Invoice(request.ClientId, request.Discount);
 
-        var productIds = request.Details.Select(d => d.ProductId).Distinct();
-        var productsDb = (await _productRepository.GetByIdsAsync(productIds)).ToDictionary(p => p.Id);
+        var productIds = request.Details.Select(d => d.ProductId).Distinct().ToList();
+        var products = await _productRepository.GetByIdsAsync(productIds);
 
-        var newInvoice = new Invoice
+        foreach (var detailDto in request.Details)
         {
-            ClientId = client.Id,
-            Discount = request.Discount,
-            Status = "Pending",
-            IssueDate = DateTime.UtcNow
-        };
+            var product = products.FirstOrDefault(p => p.Id == detailDto.ProductId);
+            if (product == null) throw new NotFoundException(nameof(Product), detailDto.ProductId);
 
-        decimal generalSubtotal = 0;
-
-        foreach (var detailReq in request.Details)
-        {
-            if (detailReq.Quantity <= 0)
-                throw new DomainException($"Quantity for product {detailReq.ProductId} must be greater than zero.");
-
-            if (!productsDb.TryGetValue(detailReq.ProductId, out var product))
-                throw new NotFoundException(nameof(Product), detailReq.ProductId);
-
-            if (!product.IsActive)
-                throw new ProductInactiveException(product.Id);
-
-            if (detailReq.Quantity > product.Stock)
-                throw new InsufficientStockException(product.Name, detailReq.Quantity, product.Stock);
-
-            var lineSubtotal = detailReq.Quantity * product.UnitPrice;
-            generalSubtotal += lineSubtotal;
-
-            product.Stock -= detailReq.Quantity;
-            _productRepository.Update(product); 
-
-            newInvoice.Details.Add(new InvoiceDetail
-            {
-                ProductId = product.Id,
-                Quantity = detailReq.Quantity,
-                UnitPrice = product.UnitPrice 
-            });
+            // This will internally deduct stock and update totals
+            invoice.AddDetail(product, detailDto.Quantity);
         }
 
-        const decimal TAX_RATE = 0.19m;
-        newInvoice.Subtotal = generalSubtotal;
-        
-        if (newInvoice.Discount > newInvoice.Subtotal)
-            throw new DomainException("Discount cannot be greater than invoice subtotal.");
+        // Generate atomic Invoice Number from sequence
+        var invoiceNumber = await _invoiceRepository.GenerateInvoiceNumberAsync();
+        invoice.SetInvoiceNumber(invoiceNumber);
 
-        var taxableBase = newInvoice.Subtotal - newInvoice.Discount;
-        newInvoice.Tax = taxableBase * TAX_RATE;
-        newInvoice.Total = taxableBase + newInvoice.Tax;
+        await _invoiceRepository.AddAsync(invoice);
+        await _unitOfWork.SaveChangesAsync();
 
-        newInvoice.InvoiceNumber = await _invoiceRepository.GenerateInvoiceNumberAsync();
-
-        await _invoiceRepository.AddAsync(newInvoice);
-        await _unitOfWork.SaveChangesAsync(); 
-
-        return new InvoiceResponse
-        {
-            Id = newInvoice.Id,
-            InvoiceNumber = newInvoice.InvoiceNumber,
-            Total = newInvoice.Total,
-            Status = newInvoice.Status
-        };
+        return invoice.Id;
     }
 
-    public async Task<object> GetAllAsync(int? clientId, string? status, DateTime? startDate, DateTime? endDate)
+    public async Task<IEnumerable<InvoiceResponse>> GetAllAsync(int? clientId, string? status, DateTime? startDate, DateTime? endDate)
     {
         var invoices = await _invoiceRepository.GetAllAsync(clientId, status, startDate, endDate);
-        return invoices.Select(i => new
+        return invoices.Select(i => new InvoiceResponse
         {
-            i.Id,
-            i.InvoiceNumber,
-            i.IssueDate,
+            Id = i.Id,
+            InvoiceNumber = i.InvoiceNumber,
+            IssueDate = i.IssueDate,
             ClientName = $"{i.Client.FirstName} {i.Client.LastName}".Trim(),
-            i.Subtotal,
-            i.Tax,
-            i.Discount,
-            i.Total,
-            i.Status
+            Subtotal = i.Subtotal,
+            Tax = i.Tax,
+            Discount = i.Discount,
+            Total = i.Total,
+            Status = i.Status
         });
     }
 
-    public async Task<object> GetByIdAsync(int id)
+    public async Task<InvoiceResponse> GetByIdAsync(int id)
     {
         var invoice = await _invoiceRepository.GetByIdAsync(id);
         if (invoice == null) throw new NotFoundException(nameof(Invoice), id);
 
-        return new
+        return new InvoiceResponse
         {
-            invoice.Id,
-            invoice.InvoiceNumber,
-            invoice.IssueDate,
-            Client = new { invoice.Client.Id, Name = $"{invoice.Client.FirstName} {invoice.Client.LastName}".Trim() },
-            invoice.Subtotal,
-            invoice.Tax,
-            invoice.Discount,
-            invoice.Total,
-            invoice.Status,
-            Details = invoice.Details.Select(d => new
+            Id = invoice.Id,
+            InvoiceNumber = invoice.InvoiceNumber,
+            IssueDate = invoice.IssueDate,
+            ClientName = $"{invoice.Client.FirstName} {invoice.Client.LastName}".Trim(),
+            Subtotal = invoice.Subtotal,
+            Tax = invoice.Tax,
+            Discount = invoice.Discount,
+            Total = invoice.Total,
+            Status = invoice.Status,
+            Details = invoice.Details.Select(d => new InvoiceDetailResponse
             {
-                d.Id,
-                d.ProductId,
+                Id = d.Id,
+                ProductId = d.ProductId,
                 ProductName = d.Product.Name,
-                d.Quantity,
-                d.UnitPrice,
-                d.Subtotal
-            })
+                Quantity = d.Quantity,
+                UnitPrice = d.UnitPrice,
+                Subtotal = d.Subtotal
+            }).ToList()
         };
     }
 
@@ -153,18 +106,10 @@ public class InvoiceService : IInvoiceService
         var invoice = await _invoiceRepository.GetByIdAsync(id);
         if (invoice == null) throw new NotFoundException(nameof(Invoice), id);
         
-        if (invoice.Status == "Voided") throw new DomainException("Invoice is already voided.");
+        // This will internally validate status and replenish stock
+        invoice.VoidInvoice();
 
-        // Replenish stock
-        foreach (var detail in invoice.Details)
-        {
-            detail.Product.Stock += detail.Quantity;
-            _productRepository.Update(detail.Product);
-        }
-
-        invoice.Status = "Voided";
         _invoiceRepository.Update(invoice);
-        
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -173,12 +118,10 @@ public class InvoiceService : IInvoiceService
         var invoice = await _invoiceRepository.GetByIdAsync(id);
         if (invoice == null) throw new NotFoundException(nameof(Invoice), id);
 
-        if (invoice.Status != "Pending") throw new DomainException($"Cannot pay an invoice with status '{invoice.Status}'.");
+        // Internally sets to Paid and validates
+        invoice.Pay();
 
-        invoice.Status = "Paid";
         _invoiceRepository.Update(invoice);
-        
         await _unitOfWork.SaveChangesAsync();
     }
 }
-

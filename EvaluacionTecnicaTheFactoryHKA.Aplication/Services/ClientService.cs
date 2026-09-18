@@ -1,4 +1,5 @@
 using EvaluacionTecnicaTheFactoryHKA.Aplication.DTOs.Requests.Clients;
+using EvaluacionTecnicaTheFactoryHKA.Aplication.DTOs.Responses.Clients;
 using EvaluacionTecnicaTheFactoryHKA.Aplication.Interfaces;
 using EvaluacionTecnicaTheFactoryHKA.Domain.Entities;
 using EvaluacionTecnicaTheFactoryHKA.Domain.Exceptions;
@@ -47,26 +48,39 @@ public class ClientService : IClientService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<object> GetAllAsync(bool? isActive)
+    public async Task<IEnumerable<ClientResponse>> GetAllAsync(bool? isActive)
     {
         var clients = await _clientRepository.GetAllAsync(isActive);
-        return clients.Select(c => new
+        return clients.Select(c => new ClientResponse
         {
-            c.Id,
-            c.DocumentType,
-            c.DocumentNumber,
-            c.FirstName,
-            c.LastName,
-            c.Email,
-            c.IsActive
+            Id = c.Id,
+            DocumentType = c.DocumentType,
+            DocumentNumber = c.DocumentNumber,
+            FirstName = c.FirstName,
+            LastName = c.LastName,
+            Email = c.Email,
+            Phone = c.Phone,
+            Address = c.Address,
+            IsActive = c.IsActive
         });
     }
 
-    public async Task<object> GetByIdAsync(int id)
+    public async Task<ClientResponse> GetByIdAsync(int id)
     {
-        var client = await _clientRepository.GetByIdAsync(id);
-        if (client == null) throw new NotFoundException(nameof(Client), id);
-        return client;
+        var c = await _clientRepository.GetByIdAsync(id);
+        if (c == null) throw new NotFoundException(nameof(Client), id);
+        return new ClientResponse
+        {
+            Id = c.Id,
+            DocumentType = c.DocumentType,
+            DocumentNumber = c.DocumentNumber,
+            FirstName = c.FirstName,
+            LastName = c.LastName,
+            Email = c.Email,
+            Phone = c.Phone,
+            Address = c.Address,
+            IsActive = c.IsActive
+        };
     }
 
     public async Task UpdateAsync(int id, CreateClientRequest request)

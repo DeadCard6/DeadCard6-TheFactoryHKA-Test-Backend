@@ -17,6 +17,10 @@ public class ApplicationDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        
+        modelBuilder.HasSequence<int>("InvoiceNumbers")
+            .StartsAt(1)
+            .IncrementsBy(1);
 
         modelBuilder.Entity<Client>(entity =>
         {
@@ -76,10 +80,14 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.InvoiceNumber).IsRequired().HasMaxLength(20);
             entity.HasIndex(e => e.InvoiceNumber).IsUnique();
             entity.Property(e => e.IssueDate).HasDefaultValueSql("GETDATE()");
-            entity.Property(e => e.Subtotal).HasColumnType("decimal(12,2)").HasDefaultValue(0);
-            entity.Property(e => e.Tax).HasColumnType("decimal(12,2)").HasDefaultValue(0);
-            entity.Property(e => e.Discount).HasColumnType("decimal(12,2)").HasDefaultValue(0);
-            entity.Property(e => e.Total).HasColumnType("decimal(12,2)").HasDefaultValue(0);
+            entity.Property(e => e.Subtotal).HasColumnType("decimal(18,2)").HasDefaultValue(0);
+            entity.Property(e => e.Tax).HasColumnType("decimal(18,2)").HasDefaultValue(0);
+            entity.Property(e => e.Discount).HasColumnType("decimal(18,2)").HasDefaultValue(0);
+            entity.Property(e => e.Total).HasColumnType("decimal(18,2)").HasDefaultValue(0);
+            
+            var navigation = entity.Metadata.FindNavigation(nameof(Invoice.Details));
+            navigation?.SetPropertyAccessMode(PropertyAccessMode.Field);
+
             entity.Property(e => e.Status).IsRequired().HasMaxLength(20).HasDefaultValue("Pending");
 
             entity.HasOne(e => e.Client)

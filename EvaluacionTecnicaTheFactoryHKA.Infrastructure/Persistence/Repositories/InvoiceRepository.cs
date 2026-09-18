@@ -50,8 +50,10 @@ public class InvoiceRepository : IInvoiceRepository
 
     public async Task<string> GenerateInvoiceNumberAsync()
     {
-        var count = await _context.Invoices.CountAsync();
-        return $"INV-{count + 1:D6}";
+        // Obtain atomic sequence value directly from SQL Server
+        var nextValResult = await _context.Database.SqlQuery<int>($"SELECT NEXT VALUE FOR InvoiceNumbers AS Value").ToListAsync();
+        var nextValue = nextValResult.First();
+        return $"INV-{nextValue:D6}";
     }
 
     public void Update(Invoice invoice)

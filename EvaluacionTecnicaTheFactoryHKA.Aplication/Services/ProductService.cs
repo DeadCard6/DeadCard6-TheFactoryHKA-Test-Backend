@@ -1,4 +1,5 @@
 using EvaluacionTecnicaTheFactoryHKA.Aplication.DTOs.Requests.Products;
+using EvaluacionTecnicaTheFactoryHKA.Aplication.DTOs.Responses.Products;
 using EvaluacionTecnicaTheFactoryHKA.Aplication.Interfaces;
 using EvaluacionTecnicaTheFactoryHKA.Domain.Entities;
 using EvaluacionTecnicaTheFactoryHKA.Domain.Exceptions;
@@ -50,26 +51,37 @@ public class ProductService : IProductService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<object> GetAllAsync(int? categoryId, bool? isActive, string? name)
+    public async Task<IEnumerable<ProductResponse>> GetAllAsync(int? categoryId, bool? isActive, string? name)
     {
         var products = await _productRepository.GetAllAsync(categoryId, isActive, name);
-        return products.Select(p => new
+        return products.Select(p => new ProductResponse
         {
-            p.Id,
-            p.Code,
-            p.Name,
-            p.CategoryId,
-            p.UnitPrice,
-            p.Stock,
-            p.IsActive
+            Id = p.Id,
+            Code = p.Code,
+            Name = p.Name,
+            Description = p.Description,
+            CategoryId = p.CategoryId,
+            UnitPrice = p.UnitPrice,
+            Stock = p.Stock,
+            IsActive = p.IsActive
         });
     }
 
-    public async Task<object> GetByIdAsync(int id)
+    public async Task<ProductResponse> GetByIdAsync(int id)
     {
-        var product = await _productRepository.GetByIdAsync(id);
-        if (product == null) throw new NotFoundException(nameof(Product), id);
-        return product;
+        var p = await _productRepository.GetByIdAsync(id);
+        if (p == null) throw new NotFoundException(nameof(Product), id);
+        return new ProductResponse
+        {
+            Id = p.Id,
+            Code = p.Code,
+            Name = p.Name,
+            Description = p.Description,
+            CategoryId = p.CategoryId,
+            UnitPrice = p.UnitPrice,
+            Stock = p.Stock,
+            IsActive = p.IsActive
+        };
     }
 
     public async Task UpdateAsync(int id, CreateProductRequest request)

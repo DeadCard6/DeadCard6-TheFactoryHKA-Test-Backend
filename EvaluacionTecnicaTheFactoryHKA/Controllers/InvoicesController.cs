@@ -27,8 +27,9 @@ public class InvoicesController : ControllerBase
     [ProducesResponseType(409)]
     public async Task<IActionResult> Create([FromBody] CreateInvoiceRequest request)
     {
-        var response = await _invoiceService.CreateInvoiceAsync(request);
-        return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
+        var id = await _invoiceService.CreateInvoiceAsync(request);
+        var response = await _invoiceService.GetByIdAsync(id);
+        return CreatedAtAction(nameof(GetById), new { id = id }, response);
     }
 
     /// <summary>
