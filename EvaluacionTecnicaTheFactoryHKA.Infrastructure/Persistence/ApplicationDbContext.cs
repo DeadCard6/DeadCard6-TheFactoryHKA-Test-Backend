@@ -129,18 +129,18 @@ public class ApplicationDbContext : DbContext
 
         // Seed data
         modelBuilder.Entity<Category>().HasData(
-            new Category { Id = 1, Name = "Electronics", Description = "Electronic devices and accessories" },
-            new Category { Id = 2, Name = "Office", Description = "Office supplies and equipment" }
+            new Category { Id = 1, Name = "Electrónica", Description = "Dispositivos electrónicos y accesorios" },
+            new Category { Id = 2, Name = "Oficina", Description = "Suministros y equipos de oficina" }
         );
 
         modelBuilder.Entity<Product>().HasData(
-            new Product { Id = 1, Code = "ELE-001", Name = "Wireless Mouse", CategoryId = 1, UnitPrice = 45000, Stock = 50, IsActive = true },
-            new Product { Id = 2, Code = "ELE-002", Name = "Mechanical Keyboard", CategoryId = 1, UnitPrice = 120000, Stock = 30, IsActive = true },
-            new Product { Id = 3, Code = "OFI-001", Name = "Letter Paper Ream", CategoryId = 2, UnitPrice = 15000, Stock = 100, IsActive = true }
+            new Product { Id = 1, Code = "ELE-001", Name = "Ratón Inalámbrico", CategoryId = 1, UnitPrice = 45000, Stock = 50, IsActive = true },
+            new Product { Id = 2, Code = "ELE-002", Name = "Teclado Mecánico", CategoryId = 1, UnitPrice = 120000, Stock = 30, IsActive = true },
+            new Product { Id = 3, Code = "OFI-001", Name = "Resma de Papel Carta", CategoryId = 2, UnitPrice = 15000, Stock = 100, IsActive = true }
         );
 
         modelBuilder.Entity<Client>().HasData(
-            new Client { Id = 1, DocumentType = "CC", DocumentNumber = "1000000001", FirstName = "John", LastName = "Doe", Email = "john.doe@example.com", IsActive = true }
+            new Client { Id = 1, DocumentType = "CC", DocumentNumber = "1000000001", FirstName = "Juan", LastName = "Pérez", Email = "juan.perez@example.com", IsActive = true }
         );
     }
 }
