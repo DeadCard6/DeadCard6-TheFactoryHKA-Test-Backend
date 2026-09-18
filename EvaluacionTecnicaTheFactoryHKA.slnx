@@ -10,4 +10,5 @@
     <Project Path="EvaluacionTecnicaTheFactoryHKA.Authentication/EvaluacionTecnicaTheFactoryHKA.Authentication.csproj" />
     <Project Path="EvaluacionTecnicaTheFactoryHKA.Infrastructure/EvaluacionTecnicaTheFactoryHKA.Infrastructure.csproj" />
   </Folder>
+  <Project Path="EvaluacionTecnicaTheFactoryHKA.Tests/EvaluacionTecnicaTheFactoryHKA.Tests.csproj" />
 </Solution>
